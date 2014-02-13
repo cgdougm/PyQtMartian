@@ -5,7 +5,7 @@
 
 import sys, os
 import math
-from path import path as Path
+import glob
 from collections import defaultdict
 
 from PyQt4.QtOpenGL import *
@@ -15,29 +15,16 @@ from PyQt4.QtGui import *
 from random import uniform, randint
 from odict import OrderedDict as odict
 
-try:
-    __file__
-except:
-    __file__ = r'E:\Work\Code\StereoViewer\sv.py'
-appPath = Path(__file__).abspath().dirname()
-resourceDir = appPath / "resources"
+appPath = os.path.dirname( os.path.abspath(__file__) )
+resourceDir = os.path.join( appPath, "resources")
 
-if sys.platform.startswith("linux"):
-    docsPath = Path('.')
-    texturePath = appPath / "images"
-    currentDir  = Path().getcwd()
-else:
-    docsPath = Path(r'C:\Documents and Settings\doug\My Documents')
-    sys.path.append(r'C:\Documents and Settings\doug\My Documents\dvlp\trunk')
-    texturePath = docsPath  / "Grandfather Clock" / "TextureMaking"
-    currentDir  = Path(r'C:\Documents and Settings\doug\My Documents')
+currentDir  = os.getcwd()
 
-iconPath = resourceDir / "icons"
-fontDir = resourceDir / r'fonts'
+iconPath = os.path.join(resourceDir, "icons")
+fontDir  = os.path.join(resourceDir, "fonts")
 
-defaultFontPath = fontDir / 'arial.ttf'
+defaultFontPath = os.path.join(fontDir, "arial.ttf")
 
-from shaders import  ShaderBase, MipmappedImage, GlSlShader
 
 try:
     from OpenGL import GL
@@ -69,8 +56,8 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     app.setStyle('Plastique')
 
-availableFontFiles = fontDir.files("*.otf") + fontDir.files("*.ttf")
-availableFontPath = dict( [(k.namebase, k) for k in availableFontFiles ] )
+availableFontFiles = glob.glob( os.path.join(fontDir, "*.*tf"))
+availableFontPath = dict( [(k, os.path.join(fontDir, k)) for k in availableFontFiles ] )
 
 BLACK = (0,0,0,1)
 WHITE = (1,1,1,1)
@@ -677,8 +664,8 @@ class MainWindow(QMainWindow):
         self.playButton.setChecked(False)
         self.playButton.setAutoRaise(True)
         playPauseIcon = QIcon()
-        playPauseIcon.addPixmap(QPixmap(iconPath / "play.png"),  QIcon.Normal, QIcon.Off)
-        playPauseIcon.addPixmap(QPixmap(iconPath / "pause.png"), QIcon.Normal, QIcon.On)
+        playPauseIcon.addPixmap(QPixmap(os.path.join(iconPath, "play.png")),  QIcon.Normal, QIcon.Off)
+        playPauseIcon.addPixmap(QPixmap(os.path.join(iconPath, "pause.png")), QIcon.Normal, QIcon.On)
         self.playButton.setIcon(playPauseIcon)
         self.playButton.setToolTip("Play/Pause")
         def playPauseCB(onOff):
@@ -687,19 +674,16 @@ class MainWindow(QMainWindow):
             else:
                 self.view.timelineCB("pause")
         self.connect(self.playButton, SIGNAL("toggled(bool)"), playPauseCB)
-        #self.playButton.setDefaultAction(playPauseAction)
-
+        
         self.timeDisplay = TimeDisplay(self)
 
-        self.toolbar.addAction(QIcon(iconPath / "camera.png"), "Save",      self.saveCB)
+        self.toolbar.addAction(QIcon(os.path.join(iconPath, "camera.png")), "Save",      self.saveCB)
         self.toolbar.addSeparator()
         self.toolbar.addWidget(self.timeDisplay)
-        self.toolbar.addAction(QIcon(iconPath / "rewind.png"), "Rewind",    lambda : self.view.timelineCB("rewind"))
-        self.toolbar.addAction(QIcon(iconPath / "stop.png"),   "Stop",      lambda : self.view.timelineCB("stop"))
+        self.toolbar.addAction(QIcon(os.path.join(iconPath, "rewind.png")), "Rewind",    lambda : self.view.timelineCB("rewind"))
+        self.toolbar.addAction(QIcon(os.path.join(iconPath, "stop.png")),   "Stop",      lambda : self.view.timelineCB("stop"))
         self.toolbar.addWidget(self.playButton)
-        #self.toolbar.addAction(QIcon(iconPath / "play.png"),   "Play",      lambda : self.view.timelineCB("play"))
-        #self.toolbar.addAction(QIcon(iconPath / "pause.png"),  "Pause",     lambda : self.view.timelineCB("pause"))
-        self.toolbar.addAction(QIcon(iconPath / "record.png"), "Record",    lambda : self.view.timelineCB("record"))
+        self.toolbar.addAction(QIcon(os.path.join(iconPath, "record.png")), "Record",    lambda : self.view.timelineCB("record"))
 
     def newObjectCB(self,objType, objClass):
         self.objectIndex[objType] += 1
